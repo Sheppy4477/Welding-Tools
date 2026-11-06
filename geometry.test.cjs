@@ -90,12 +90,12 @@ console.log('Symmetric V groove checks passed: reference geometry and weight res
 const densityInputs={...v,...referenceCases[0],joint:'v',materialDensity:.283};
 const densityBase=calculate(densityInputs,[]);
 const densityOverride=calculate({...densityInputs,weldDensity:.163},[]);
-close(densityOverride.netWeight,densityBase.netWeight);
+close(densityOverride.netWeight,densityBase.netVolume*.163);
 close(densityOverride.weld.weight,densityBase.weld.volume*.163);
-close(densityOverride.totalWeight,densityBase.netWeight+densityBase.weld.volume*.163);
+close(densityOverride.totalWeight,(densityBase.netVolume+densityBase.weld.volume)*.163);
 const materialOverride=calculate({...densityInputs,materialDensity:.098},[]);
 close(materialOverride.weld.weight,densityBase.weld.weight);
-close(materialOverride.netWeight,densityBase.netVolume*.098);
+close(materialOverride.netWeight,densityBase.netWeight);
 const eventHandlers={},densityButtons=[],selection={textContent:''};
 const densityGroup={append:button=>densityButtons.push(button)};
 const densityDocument={addEventListener:(name,handler)=>{eventHandlers[name]=handler;},createElement:()=>({attributes:{},setAttribute(name,value){this.attributes[name]=value;}})};
@@ -115,7 +115,7 @@ eventHandlers.input();
 assert.equal(densityFields[0].value,'0.251');
 assert.ok(densityButtons.every(button=>button.attributes['aria-pressed']==='false'));
 assert.ok(selection.textContent.startsWith('Custom densities'));
-console.log('Density checks passed: all four reference buttons, selection state, recalculation, custom overrides, and independent material/weld weights.');
+console.log('Density checks passed: all four reference buttons, selection state, recalculation, custom overrides, and shared material/weld density.');
 vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-results.js','utf8'),box);
 const geometryStartup=vm.runInNewContext(fs.readFileSync(__dirname+'/geometry.js','utf8').split('function makeField')[0]+'({initial,fieldDefs})');
 const startup=calculate(geometryStartup.initial);
@@ -138,10 +138,10 @@ for(const profile of ['v','bevel','u','fillet']){
  const result=calculate(inputs);
  close(result.grossVolume,2*inputs.plateWidth*inputs.depth*inputs.weldLength);
  close(result.netMaterialArea,result.materialArea-result.weld.removedArea);
- close(result.netWeight,(result.grossVolume-result.weld.removedVolume)*inputs.materialDensity);
+ close(result.netWeight,(result.grossVolume-result.weld.removedVolume)*inputs.weldDensity);
  close(result.totalWeight,result.netWeight+result.weld.weight);
  const changed=calculate({...inputs,weldDensity:.2});
- close(changed.netWeight,profile==='fillet'?result.netVolume*.2:result.netWeight);
+ close(changed.netWeight,result.netVolume*.2);
  close(changed.weld.weight,result.weld.volume*.2);
  if(profile==='fillet'){
   close(result.cut,0);close(result.weld.capHeight,0);close(result.weld.capArea,0);close(result.weld.rootArea,0);
@@ -175,7 +175,7 @@ assert.equal(twoSides.weld.oppositeProfile.length,3);
 assert.ok(twoSides.weld.oppositeProfile.every(point=>point[0]<=-singleFillet.depth));
 assert.ok(box.GeometryResults.render(twoSides).includes('Weld #2'));
 assert.ok(!box.GeometryResults.render(oneSide).includes('Side 2 weight'));
-assert.equal(geometryStartup.fieldDefs.find(field=>field[0]==='materialDensity')[3],'bevel,u,v');
+assert.ok(!geometryStartup.fieldDefs.some(field=>field[0]==='materialDensity'));
 for(const key of ['oppositeLegA','oppositeLegB'])assert.equal(geometryStartup.fieldDefs.find(field=>field[0]===key)[3],'opposite');
 console.log('Fillet checks passed: one shared density, unequal opposite legs, both-side totals, unchanged stock weight, optional validation, and profile switching.');
 // User-specified aluminum example: two 6 × 0.625 × 12 plates, 3/8 and 5/8 fillets.
