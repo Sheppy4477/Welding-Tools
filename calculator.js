@@ -6,7 +6,9 @@ function calculate(v){
  if(v.joint==='fillet')area=positive('legA')*positive('legB')/2;
  else if(v.joint==='groove')area=n('gap')*positive('depth')+positive('depth')**2*Math.tan(n('angle',1,179)*Math.PI/360);
  else area=positive('area');
- area*=1+n('extra')/100;
+ const capHeight=n('capHeight'),rootHeight=v.joint==='fillet'?0:n('rootHeight');
+ const capWidth=v.joint==='fillet'?Math.hypot(positive('legA'),positive('legB')):v.joint==='groove'?n('gap')+2*positive('depth')*Math.tan(n('angle',1,179)*Math.PI/360):capHeight>0?positive('capWidth'):0;
+ area+=0.5*capWidth*capHeight+(rootHeight>0?0.5*positive('rootWidth')*rootHeight:0);
  const length=positive('length'),density=positive('weldDensity'),weld=area*length*density;
  let volume;
  if(v.shape==='plate')volume=positive('stockLength')*positive('width')*positive('thickness');
