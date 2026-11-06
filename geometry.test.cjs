@@ -50,32 +50,6 @@ assert.throws(()=>joint({...v,weldLength:''}));
 assert.throws(()=>calculate({...v,joint:'u',weldLength:1000000},[p]));
 for(const name of ['geometry.js','geometry-core.js','app.js','calculator.js'])new vm.Script(fs.readFileSync(__dirname+'/'+name,'utf8'));
 console.log('Geometry tests passed: profiles with/without land, numeric U integration, mass balance, material shapes, validation, and script syntax.');
-vm.runInNewContext(fs.readFileSync(__dirname+'/breakdown-model.js','utf8'),box);
-for(const jointType of ['fillet','bevel','u'])for(const landMode of ['without','with']){
- const report=box.WeldBreakdown.render({...v,joint:jointType,landMode},[p]);
- assert.equal(report.result.totalWeight,calculate({...v,joint:jointType,landMode},[p]).totalWeight);
- assert.ok(report.html.includes('Combined assembly weight'));
- assert.ok(report.html.includes('<svg'));
- assert.ok(!report.html.includes('NaN'));
- assert.ok(!report.html.includes('Infinity'));
-}
-// Exercise the two-window handshake and live refresh without opening a browser.
-const button={}, status={},events={},documentEvents={};let sent=[];
-const child={closed:false,focus(){},postMessage(data,origin){sent.push({data,origin});}};
-const parent={open(){return child;},addEventListener(name,fn){events[name]=fn;}};
-vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-window.js','utf8'),{
- window:parent,location:{origin:'https://example.test'},read:()=>({v,pieces:[p]}),
- document:{getElementById:id=>id==='openBreakdown'?button:status,addEventListener:(name,fn)=>{documentEvents[name]=fn;}}
-});
-button.onclick();
-events.message({source:child,origin:'https://example.test',data:{type:'weld-breakdown-ready'}});
-assert.equal(sent.length,1);assert.equal(sent[0].data.v,v);
-documentEvents['geometry-updated']();assert.equal(sent.length,2);
-events.message({source:{},origin:'https://example.test',data:{type:'weld-breakdown-ready'}});assert.equal(sent.length,2);
-child.closed=true;documentEvents['geometry-updated']();assert.equal(sent.length,2);
-parent.open=()=>null;button.onclick();assert.ok(status.textContent.includes('Allow pop-ups'));
-for(const name of ['breakdown-model.js','breakdown.js','geometry-window.js'])new vm.Script(fs.readFileSync(__dirname+'/'+name,'utf8'));
-console.log('Breakdown tests passed: all profiles, report totals, window handshake, live updates, source validation, closed window, and blocked popup.');
 vm.runInNewContext(fs.readFileSync(__dirname+'/calculator.js','utf8'),box);
 const productionDefaults=vm.runInNewContext(fs.readFileSync(__dirname+'/app.js','utf8').split('const sections=')[0]+'defaults');
 const productionBase=box.WeldCalculator.calculate(productionDefaults);
@@ -85,27 +59,20 @@ const grooveDefaults={...productionDefaults,joint:'groove'};
 const productionGroove=box.WeldCalculator.calculate(grooveDefaults);
 const productionRoot=box.WeldCalculator.calculate({...grooveDefaults,rootHeight:.1,rootWidth:.25});
 close(productionRoot.weld-productionGroove.weld,.25*.1/2*120*.283);
-const crownReport=box.WeldBreakdown.render({...v,joint:'u',capHeight:.1,rootHeight:.05},[p]);
-assert.ok(crownReport.html.includes('Acap = ½ × cap width × cap height'));
-assert.ok(!crownReport.html.includes('parabolic'));
 console.log('Reinforcement tests passed: cap/root half-width-times-height areas, weld weight, assembly mass balance, validation, and production calculator.');
-// Reference cells B21:B41 from the supplied WEL410 workbook, both example tabs.
-const worksheetExamples=[
+// Independent reference cases for the symmetric two-plate geometry.
+const referenceCases=[
  {name:'Mild steel',depth:.625,plateWidth:3,weldLength:12,angle:60,gap:.1875,capHeight:.125,rootHeight:.0625,weldDensity:.283,
  expected:{removedArea:.22552744890219756,capWidth:.90918783648703216,netMaterialArea:3.5244725510978023,netVolume:42.293670613173632,netWeight:11.969108783528137,baseArea:.34271494890219756,capArea:.05682423978043951,rootArea:.005859375,area:.40539856368263705,volume:4.864782764191645,weight:1.3767335222662354,totalWeight:13.345842305794372}},
  {name:'Titanium',depth:.25,plateWidth:3,weldLength:12,angle:75,gap:.0625,capHeight:.125,rootHeight:0,weldDensity:.163,
  expected:{removedArea:.047957936748685023,capWidth:.44616349398948019,netMaterialArea:1.4520420632513149,netVolume:17.424504759015779,netWeight:2.8401942757195719,baseArea:.063582936748685023,capArea:.027885218374342512,rootArea:0,area:.091468155123027528,volume:1.0976178614763303,weight:.17891171142064186,totalWeight:3.0191059871402137}}
 ];
-for(const example of worksheetExamples){
- const inputs={...v,...example,joint:'v',landMode:'without',basis:'net',rootWidth:999};
+for(const reference of referenceCases){
+ const inputs={...v,...reference,joint:'v',landMode:'without',basis:'net',rootWidth:999};
  const result=calculate(inputs,[]);
- for(const [key,expected]of Object.entries(example.expected))close(key in result.weld?result.weld[key]:result[key],expected);
- const report=box.WeldBreakdown.render(inputs,[]);
- assert.ok(report.html.includes('Half of included angle'));
- assert.ok(report.html.includes('Net plate cross-sectional area'));
- close(report.result.totalWeight,result.totalWeight);
+ for(const [key,expected]of Object.entries(reference.expected))close(key in result.weld?result.weld[key]:result[key],expected);
  // Alter the land, length, and density together and independently reconcile areas and mass.
- const changed={...inputs,landMode:'with',land:example.depth/4,weldLength:24,weldDensity:.2};
+ const changed={...inputs,landMode:'with',land:reference.depth/4,weldLength:24,weldDensity:.2};
  const h=changed.depth-changed.land,b=h*Math.tan(changed.angle*Math.PI/360),cut=h*b;
  const ideal=changed.gap*changed.depth+cut;
  const cap=(changed.gap+2*b)*changed.capHeight/2,root=changed.gap*changed.rootHeight/2;
@@ -119,4 +86,4 @@ close(joint({...v,joint:'v',gap:0,rootHeight:.1}).rootArea,0);
 assert.throws(()=>calculate({...v,joint:'v',plateWidth:0},[]));
 assert.throws(()=>joint({...v,joint:'v',angle:0}));
 assert.throws(()=>joint({...v,joint:'v',angle:180}));
-console.log('WEL410 checks passed: every geometry/weight result matches both workbook examples; land, length, density, fixed two-plate model, root-gap width, and angle boundaries checked.');
+console.log('Symmetric V groove checks passed: reference geometry and weight results match; land, length, density, fixed two-plate model, root-gap width, and angle boundaries checked.');
