@@ -21,3 +21,5 @@ Save inputs stores the current inputs in this browser. The two calculator pages 
 Expand the formula notes for calculation assumptions. Operator factor covers production delays; additional setup is entered separately. Avoid counting the same setup time in both values.
 
 Run `node geometry.test.cjs` to check geometry, reinforcement, material/assembly mass balance, input validation, and reference calculations.
+
+Use **Show step-by-step calculations** at the bottom of Geometry & weight after completing the inputs. The button opens an inline calculation panel with formulas, substituted dimensions, units, material preparation deductions, per-fillet values, reinforcement, and assembly/batch totals. The panel updates with inputs, can be hidden, and clears when inputs become invalid. Open steps are included when printing.

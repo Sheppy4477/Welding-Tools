@@ -198,3 +198,26 @@ const aluminumHtml=box.GeometryResults.render(aluminumFillets);
 for(const label of ['One plate','Two plates total','Weld #1','Weld #2','Combined welds'])assert.ok(aluminumHtml.includes(label));
 close(box.DensityReference.materials.find(material=>material.name==='Aluminum').density,.0975);
 console.log('Aluminum fillet example matched: 8.775 lb material + 0.31078125 lb weld = 9.08578125 lb (9.086 lb rounded).');
+vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-steps.js','utf8'),box);
+for(const profile of ['v','bevel','u','fillet'])for(const landMode of ['with','without']){
+ const inputs={...geometryStartup.initial,joint:profile,landMode,filletSides:'both',oppositeLegA:.375,oppositeLegB:.625};
+ const report=box.GeometrySteps.build(inputs),rows=report.groups.flatMap(group=>group.rows),result=calculate(inputs);
+ close(rows.find(row=>row.label==='Net material weight').value,result.netWeight);
+ close(rows.find(row=>row.label==='Combined weld volume').value,result.weld.volume);
+ close(rows.find(row=>row.label==='Combined weld weight').value,result.weld.weight);
+ close(rows.find(row=>row.label==='Material plus weld weight').value,result.totalWeight);
+ if(profile==='u')close(rows.find(row=>row.label==='Curved area, each side').value*2+rows.find(row=>row.label==='Straight area, each side').value*2,result.weld.removedArea);
+ if(profile==='fillet')assert.ok(rows.some(row=>row.label==='Weld #2 weight'));
+ const html=box.GeometrySteps.render(inputs);assert.ok(!html.includes('NaN'));assert.ok(!html.includes('undefined'));
+}
+assert.throws(()=>box.GeometrySteps.build({...geometryStartup.initial,plateWidth:''}));
+const stepsButton={setAttribute(key,value){this[key]=value;}},stepsPanel={hidden:true,scrollIntoView(){}},stepsContent={innerHTML:''};
+const stepsBox={WeldGeometry:box.WeldGeometry};
+vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-steps.js','utf8'),{globalThis:stepsBox,document:{getElementById:id=>({showCalculations:stepsButton,calculationSteps:stepsPanel,stepsContent})[id]}});
+let liveInputs={...geometryStartup.initial};const controller=stepsBox.GeometrySteps.mount(()=>liveInputs);
+controller.update(liveInputs);assert.equal(stepsButton.disabled,false);
+stepsButton.onclick();assert.equal(stepsPanel.hidden,false);assert.equal(stepsButton['aria-expanded'],'true');
+const firstSteps=stepsContent.innerHTML;liveInputs={...liveInputs,weldLength:24};controller.update(liveInputs);assert.notEqual(stepsContent.innerHTML,firstSteps);
+controller.invalidate();assert.equal(stepsPanel.hidden,true);assert.equal(stepsButton.disabled,true);assert.equal(stepsContent.innerHTML,'');
+controller.update(liveInputs);stepsButton.onclick();stepsButton.onclick();assert.equal(stepsPanel.hidden,true);
+console.log('Calculation-step checks passed: every profile, land options, U components, totals, invalid input, toggle state, and live updates.');
