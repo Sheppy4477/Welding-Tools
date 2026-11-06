@@ -41,3 +41,29 @@ assert.throws(()=>joint({...v,weldLength:''}));
 assert.throws(()=>calculate({...v,joint:'u',weldLength:1000000},[p]));
 for(const name of ['geometry.js','geometry-core.js','app.js','calculator.js'])new vm.Script(fs.readFileSync(__dirname+'/'+name,'utf8'));
 console.log('Geometry tests passed: profiles with/without land, numeric U integration, mass balance, material shapes, validation, and script syntax.');
+vm.runInNewContext(fs.readFileSync(__dirname+'/breakdown-model.js','utf8'),box);
+for(const jointType of ['fillet','bevel','u'])for(const landMode of ['without','with']){
+ const report=box.WeldBreakdown.render({...v,joint:jointType,landMode},[p]);
+ assert.equal(report.result.totalWeight,calculate({...v,joint:jointType,landMode},[p]).totalWeight);
+ assert.ok(report.html.includes('Combined assembly weight'));
+ assert.ok(report.html.includes('<svg'));
+ assert.ok(!report.html.includes('NaN'));
+ assert.ok(!report.html.includes('Infinity'));
+}
+// Exercise the two-window handshake and live refresh without opening a browser.
+const button={}, status={},events={},documentEvents={};let sent=[];
+const child={closed:false,focus(){},postMessage(data,origin){sent.push({data,origin});}};
+const parent={open(){return child;},addEventListener(name,fn){events[name]=fn;}};
+vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-window.js','utf8'),{
+ window:parent,location:{origin:'https://example.test'},read:()=>({v,pieces:[p]}),
+ document:{getElementById:id=>id==='openBreakdown'?button:status,addEventListener:(name,fn)=>{documentEvents[name]=fn;}}
+});
+button.onclick();
+events.message({source:child,origin:'https://example.test',data:{type:'weld-breakdown-ready'}});
+assert.equal(sent.length,1);assert.equal(sent[0].data.v,v);
+documentEvents['geometry-updated']();assert.equal(sent.length,2);
+events.message({source:{},origin:'https://example.test',data:{type:'weld-breakdown-ready'}});assert.equal(sent.length,2);
+child.closed=true;documentEvents['geometry-updated']();assert.equal(sent.length,2);
+parent.open=()=>null;button.onclick();assert.ok(status.textContent.includes('Allow pop-ups'));
+for(const name of ['breakdown-model.js','breakdown.js','geometry-window.js'])new vm.Script(fs.readFileSync(__dirname+'/'+name,'utf8'));
+console.log('Breakdown tests passed: all profiles, report totals, window handshake, live updates, source validation, closed window, and blocked popup.');
