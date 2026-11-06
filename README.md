@@ -2,6 +2,10 @@
 
 Open `index.html` in a web browser. No installation, server, or internet connection is needed for calculations.
 
+Use **Geometry & weight** in the navigation, or open `geometry.html`, for material and weld cross-sectional area, volume, weight, and combined assembly totals. Supports multiple rectangular, round, or tubular material groups; fillets; single bevel grooves; and symmetric single U grooves. Both groove profiles support land or no land. U grooves use circular root corners tangent to straight upper walls, with explicit radius and included-angle inputs. The page includes formulas and a proportional joint preview.
+
+Select whether material dimensions are before preparation or already net. Before preparation subtracts the ideal groove cutout before adding deposited weld metal. Automatic subtraction requires a common material density; for mixed materials enter prepared net pieces. Summed material cross-section and gross exterior surface area are reported separately. Land remains parent material. Saved geometry inputs are independent of the production estimate.
+
 Enter geometry and stock for one finished unit, then set the batch quantity. Travel and wire feed speeds use inches per minute (IPM); weight uses pounds and prices use USD. Default density is an editable 0.283 lb/in³ steel estimate.
 
 The calculator includes fillet, single V groove, and custom weld areas; plate, round bar, tube, and custom stock volumes; solid-wire deposition from feed speed; direct deposition-rate entry; measured bead travel speed; entered or measured operator factor; labor, overhead, filler, stock, and arc-consumable costs.
