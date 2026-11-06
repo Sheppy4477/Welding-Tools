@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const box = {};
 vm.runInNewContext(fs.readFileSync(__dirname + '/geometry-core.js', 'utf8'), box);
 const {calculate, joint, material} = box.WeldGeometry;
-const v = {joint:'fillet',legA:.25,legB:.25,landMode:'without',depth:1,gap:.0625,land:.125,angle:30,radius:.25,weldLength:48,capHeight:0,rootHeight:0,rootWidth:.125,weldDensity:.283,quantity:2,basis:'gross'};
+const v = {joint:'fillet',legA:.25,legB:.25,landMode:'without',depth:1,plateWidth:6,gap:.0625,land:.125,angle:30,radius:.25,weldLength:48,capHeight:0,rootHeight:0,rootWidth:.125,weldDensity:.283,quantity:2,basis:'gross'};
 const p = {shape:'rectangle',length:48,width:6,thickness:1,count:2,density:.283};
 const close = (a,b,tol=1e-9) => assert.ok(Math.abs(a-b)<tol, `${a} != ${b}`);
 close(joint(v).area,.03125);
@@ -31,34 +31,34 @@ close(squareU.removedArea,2*(.25**2*(Math.PI/4)+.25*.75));
 const reinforced=calculate({...v,joint:'u',capHeight:.0625,rootHeight:.03125},[p]);
 close(reinforced.cut,joint({...v,joint:'u'}).removedVolume);
 close(reinforced.weld.capArea,reinforced.weld.capWidth*.0625/2);
-close(reinforced.weld.rootArea,.125*.03125/2);
+close(reinforced.weld.rootArea,.0625*.03125/2);
 close(reinforced.weld.volume,(reinforced.weld.baseArea+reinforced.weld.capArea+reinforced.weld.rootArea)*48);
 close(reinforced.totalWeight,calculate({...v,joint:'u'},[p]).totalWeight+(reinforced.weld.capArea+reinforced.weld.rootArea)*48*.283);
-close(joint({...v,capHeight:.1,rootHeight:.5}).capArea,Math.hypot(.25,.25)*.1/2);
+close(joint({...v,capHeight:.1,rootHeight:.5}).capArea,0);
 close(joint({...v,rootHeight:.5}).rootArea,0);
-assert.throws(()=>joint({...v,capHeight:-.1}));
-assert.throws(()=>joint({...v,joint:'u',rootHeight:.1,rootWidth:0}));
+assert.throws(()=>joint({...v,joint:'bevel',capHeight:-.1}));
+assert.throws(()=>joint({...v,joint:'u',rootHeight:.1,gap:-.1}));
 assert.throws(()=>joint({...v,joint:'bevel',rootHeight:-.1}));
 const net=calculate({...v,joint:'bevel',basis:'net'},[p]);
-close(net.netVolume,576);
+close(net.netVolume,576-net.cut);
 close(material({shape:'tube',diameter:2,wall:.125,length:12,count:1,density:.283}).volume,Math.PI*(4-1.75**2)*3);
 assert.throws(()=>joint({...v,joint:'u',radius:4}));
 assert.throws(()=>joint({...v,joint:'bevel',landMode:'with',land:1}));
-assert.throws(()=>calculate({...v,joint:'u'},[p,{...p,density:.1}]));
+close(calculate({...v,joint:'u'},[p,{...p,density:.1}]).grossVolume,576);
 assert.throws(()=>calculate({...v,quantity:1.5},[p]));
 assert.throws(()=>joint({...v,weldLength:''}));
-assert.throws(()=>calculate({...v,joint:'u',weldLength:1000000},[p]));
+assert.throws(()=>calculate({...v,joint:'u',plateWidth:.0001}));
 for(const name of ['geometry.js','geometry-core.js','app.js','calculator.js','density-reference.js'])new vm.Script(fs.readFileSync(__dirname+'/'+name,'utf8'));
 console.log('Geometry tests passed: profiles with/without land, numeric U integration, mass balance, material shapes, validation, and script syntax.');
 vm.runInNewContext(fs.readFileSync(__dirname+'/calculator.js','utf8'),box);
 const productionDefaults=vm.runInNewContext(fs.readFileSync(__dirname+'/app.js','utf8').split('const sections=')[0]+'defaults');
 const productionBase=box.WeldCalculator.calculate(productionDefaults);
 const productionCap=box.WeldCalculator.calculate({...productionDefaults,capHeight:.1});
-close(productionCap.weld-productionBase.weld,Math.hypot(.25,.25)*.1/2*120*.283);
+close(productionCap.weld,productionBase.weld);
 const grooveDefaults={...productionDefaults,joint:'groove'};
 const productionGroove=box.WeldCalculator.calculate(grooveDefaults);
 const productionRoot=box.WeldCalculator.calculate({...grooveDefaults,rootHeight:.1,rootWidth:.25});
-close(productionRoot.weld-productionGroove.weld,.25*.1/2*120*.283);
+close(productionRoot.weld-productionGroove.weld,grooveDefaults.gap*.1/2*120*.283);
 console.log('Reinforcement tests passed: cap/root half-width-times-height areas, weld weight, assembly mass balance, validation, and production calculator.');
 // Independent reference cases for the symmetric two-plate geometry.
 const referenceCases=[
@@ -117,8 +117,8 @@ assert.ok(densityButtons.every(button=>button.attributes['aria-pressed']==='fals
 assert.ok(selection.textContent.startsWith('Custom densities'));
 console.log('Density checks passed: all four reference buttons, selection state, recalculation, custom overrides, and independent material/weld weights.');
 vm.runInNewContext(fs.readFileSync(__dirname+'/geometry-results.js','utf8'),box);
-const geometryStartup=vm.runInNewContext(fs.readFileSync(__dirname+'/geometry.js','utf8').split('function makeField')[0]+'({initial,initialPiece})');
-const startup=calculate(geometryStartup.initial,[geometryStartup.initialPiece]);
+const geometryStartup=vm.runInNewContext(fs.readFileSync(__dirname+'/geometry.js','utf8').split('function makeField')[0]+'({initial,fieldDefs})');
+const startup=calculate(geometryStartup.initial);
 assert.ok(startup.cut>0);
 close(startup.netMaterialArea,startup.materialArea-startup.deductedArea);
 close(startup.netVolume,startup.grossVolume-startup.cut);
@@ -128,8 +128,30 @@ const resultHtml=box.GeometryResults.render(startup);
 for(const label of ['id="materialResults"','id="weldResults"','Preparation deduction','Net material','Weld cross-section area','Weld volume','Weld weight'])assert.ok(resultHtml.includes(label));
 assert.ok(!resultHtml.includes('NaN'));
 assert.ok(!resultHtml.includes('undefined'));
-// Partial-length preparation still has valid volume/weight deductions, but no misleading net area.
+// Shared plate and weld length keeps net area defined.
 const partial=calculate({...v,joint:'bevel',weldLength:12},[p]);
-assert.equal(partial.netMaterialArea,null);
-assert.ok(box.GeometryResults.render(partial).includes('Net area is unavailable'));
-console.log('Startup and result-box checks passed: valid example, bevel deductions, material/weld totals, and partial-length area handling.');
+close(partial.netMaterialArea,partial.materialArea-partial.weld.removedArea);
+close(partial.netVolume,partial.netMaterialArea*12);
+console.log('Startup and result-box checks passed: valid example, bevel deductions, material/weld totals, and shared plate/weld length handling.');
+for(const profile of ['v','bevel','u','fillet']){
+ const inputs={...geometryStartup.initial,joint:profile,rootWidth:99,basis:'net'};
+ const result=calculate(inputs);
+ close(result.grossVolume,2*inputs.plateWidth*inputs.depth*inputs.weldLength);
+ close(result.netMaterialArea,result.materialArea-result.weld.removedArea);
+ close(result.netWeight,(result.grossVolume-result.weld.removedVolume)*inputs.materialDensity);
+ close(result.totalWeight,result.netWeight+result.weld.weight);
+ const changed=calculate({...inputs,weldDensity:.2});
+ close(changed.netWeight,result.netWeight);
+ close(changed.weld.weight,result.weld.volume*.2);
+ if(profile==='fillet'){
+  close(result.cut,0);close(result.weld.capHeight,0);close(result.weld.capArea,0);close(result.weld.rootArea,0);
+  close(result.weld.area,inputs.legA*inputs.legB/2);
+ }else close(result.weld.rootArea,inputs.gap*inputs.rootHeight/2);
+}
+for(const key of ['plateWidth','depth','weldLength','materialDensity','weldDensity']){
+ const field=geometryStartup.fieldDefs.find(field=>field[0]===key);
+ assert.ok(field&&!field[3],key+' must be available for every profile');
+}
+assert.equal(geometryStartup.fieldDefs.find(field=>field[0]==='capHeight')[3],'bevel,u,v');
+assert.ok(!geometryStartup.fieldDefs.some(field=>field[0]==='rootWidth'));
+console.log('All-profile shared inputs passed: two equal plates, preparation subtraction, root-gap reinforcement width, separate densities, and fillet exclusions.');
