@@ -9,7 +9,7 @@ const v = {joint:'fillet',legA:.25,legB:.25,landMode:'without',depth:1,plateWidt
 const p = {shape:'rectangle',length:48,width:6,thickness:1,count:2,density:.283};
 const close = (a,b,tol=1e-9) => assert.ok(Math.abs(a-b)<tol, `${a} != ${b}`);
 close(joint(v).area,.03125);
-close(calculate(v,[p]).totalWeight, (576+1.5)*.283);
+close(calculate(v,[p]).totalWeight, (864+1.5)*.283);
 close(material(p).surface,1368);
 for (const landMode of ['without','with']) {
  const b={...v,joint:'bevel',angle:45,landMode};
@@ -136,7 +136,7 @@ console.log('Startup and result-box checks passed: valid example, bevel deductio
 for(const profile of ['v','bevel','u','fillet']){
  const inputs={...geometryStartup.initial,joint:profile,rootWidth:99,basis:'net'};
  const result=calculate(inputs);
- close(result.grossVolume,2*inputs.plateWidth*inputs.depth*inputs.weldLength);
+ close(result.grossVolume,(profile==='fillet'?3:2)*inputs.plateWidth*inputs.depth*inputs.weldLength);
  close(result.netMaterialArea,result.materialArea-result.weld.removedArea);
  close(result.netWeight,(result.grossVolume-result.weld.removedVolume)*inputs.materialDensity);
  close(result.totalWeight,result.netWeight+result.weld.weight);
@@ -154,7 +154,7 @@ for(const key of ['plateWidth','depth','weldLength','weldDensity']){
 }
 assert.equal(geometryStartup.fieldDefs.find(field=>field[0]==='capHeight')[3],'bevel,u,v');
 assert.ok(!geometryStartup.fieldDefs.some(field=>field[0]==='rootWidth'));
-console.log('All-profile shared inputs passed: two equal plates, preparation subtraction, root-gap reinforcement width, profile densities, and fillet exclusions.');
+console.log('All-profile shared inputs passed: profile-specific plate count, preparation subtraction, root-gap reinforcement width, profile densities, and fillet exclusions.');
 const singleFillet={...geometryStartup.initial,joint:'fillet',filletSides:'single',legA:.25,legB:.375,oppositeLegA:.5,oppositeLegB:.25};
 const oneSide=calculate(singleFillet);
 const twoSides=calculate({...singleFillet,filletSides:'both'});
@@ -178,3 +178,12 @@ assert.ok(!box.GeometryResults.render(oneSide).includes('Side 2 weight'));
 assert.equal(geometryStartup.fieldDefs.find(field=>field[0]==='materialDensity')[3],'bevel,u,v');
 for(const key of ['oppositeLegA','oppositeLegB'])assert.equal(geometryStartup.fieldDefs.find(field=>field[0]===key)[3],'opposite');
 console.log('Fillet checks passed: one shared density, unequal opposite legs, both-side totals, unchanged stock weight, optional validation, and profile switching.');
+assert.equal(oneSide.plateCount,3);
+close(oneSide.materialArea,3*singleFillet.plateWidth*singleFillet.depth);
+close(oneSide.netMaterialArea,oneSide.materialArea);
+close(oneSide.netVolume,3*singleFillet.plateWidth*singleFillet.depth*singleFillet.weldLength);
+close(oneSide.netWeight,oneSide.netVolume*singleFillet.weldDensity);
+assert.equal(twoSides.plateCount,3);
+assert.equal(startup.plateCount,2);
+assert.ok(box.GeometryResults.render(oneSide).includes('3 equal plates'));
+console.log('Additional fillet plate passed: three-plate area, volume, material weight, displayed count, and combined weld totals.');
