@@ -4,7 +4,7 @@ Open `index.html` in a web browser. No installation, server, or internet connect
 
 **Production & cost** calculates weld and stock weights, deposition from solid wire feed or a known rate, travel speed in inches per minute, operator factor, production time, and costs per pound, finished unit, and batch. Enter supplier or measured deposition data for cored wire and stick electrodes.
 
-**Geometry & weight** calculates material and weld cross-sectional area, volume, weight, and combined assembly totals. Supports symmetric V grooves, single bevel grooves, fillets, and symmetric U grooves. Groove profiles support land or no land. The page includes an inline joint preview and formula notes.
+**Geometry & weight** opens with an editable steel bevel example and calculates material and weld cross-sectional area, volume, weight, and combined assembly totals. The material box shows gross stock, preparation deductions, and net material in area/volume/weight columns. A separate weld box shows total weld cross-section, volume, and weight, with optional area components. Supports symmetric V grooves, single bevel grooves, fillets, and symmetric U grooves. Groove profiles support land or no land. The page includes an inline joint preview and formula notes. If stock lengths differ from weld length, net area is left unavailable while volume and weight deductions remain calculated.
 
 The symmetric V groove model fixes the number of equal plates at two. Enter plate thickness, width per plate, weld/plate length, total included angle, root gap, cap and root reinforcement heights, land, and densities. Each plate uses half the included angle. Beveled material is subtracted before calculating material area and weight. Cap width is the top groove opening; root reinforcement width is the root gap. Material and weld densities can be overridden independently. No cap overlap or additional penetration allowance is included.
 
@@ -16,7 +16,7 @@ Single-bevel and U-groove profiles use independent stock inputs. U grooves use c
 
 Cap and root reinforcement each use area = (width × height) / 2. Cap width comes from the joint face; custom production profiles use an entered width. Fillet cap height is perpendicular to the sloped face; fillets have no root reinforcement. Reinforcement increases weld volume and weight without changing the groove cutout.
 
-Save inputs stores the current inputs in this browser. The two calculator pages save independently. Print opens the browser print dialog, which can also save a PDF. Reset inputs restores the starting inputs; save afterward to keep the reset. New geometry calculations start with blank primary dimensions. Existing saved inputs remain available.
+Save inputs stores the current inputs in this browser. The two calculator pages save independently. Geometry always opens with the example; use Load saved inputs to retrieve your saved work, or Load example to restore the startup example. Production restores its saved inputs automatically and provides Reset inputs. Print opens the browser print dialog, which can also save a PDF.
 
 Expand the formula notes for calculation assumptions. Operator factor covers production delays; additional setup is entered separately. Avoid counting the same setup time in both values.
 

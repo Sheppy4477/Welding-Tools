@@ -1,0 +1,12 @@
+(function(root){
+const f=(n,d=5)=>n===null?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
+function render(r){
+ const row=(label,value)=>`<div class="result-row"><span>${label}</span><strong>${value}</strong></div>`;
+ const materialRow=(label,area,volume,weight,deduct=false)=>`<tr><th scope="row">${label}</th><td>${deduct?'−':''}${f(area)}</td><td>${deduct?'−':''}${f(volume)}</td><td>${deduct?'−':''}${f(weight)}</td></tr>`;
+ return `<div class="hero-value">${f(r.totalWeight)} lb<span>net material + weld / assembly</span></div>
+ <div class="result-box" id="materialResults"><h3>Material — after bevel preparation</h3><p class="note">Area, volume, and weight for one assembly.</p><table class="geometry-table"><thead><tr><th scope="col">Material</th><th scope="col">in²</th><th scope="col">in³</th><th scope="col">lb</th></tr></thead><tbody>${materialRow('Gross stock',r.materialArea,r.grossVolume,r.grossWeight)}${materialRow('Preparation deduction',r.deductedArea,r.cut,r.grossWeight-r.netWeight,true)}${materialRow('Net material',r.netMaterialArea,r.netVolume,r.netWeight)}</tbody></table><p class="note">Gross stock − bevel preparation = net material.${r.netMaterialArea===null?' Net area is unavailable when stock lengths differ from the weld length; volume and weight deductions still apply.':''}</p></div>
+ <div class="result-box" id="weldResults"><h3>Weld metal</h3>${row('Weld cross-section area',f(r.weld.area)+' in²')}${row('Weld volume',f(r.weld.volume)+' in³')}${row('Weld weight',f(r.weld.weight)+' lb')}<p class="note">Includes groove fill, cap reinforcement, and root reinforcement.</p><details><summary>Weld area components</summary>${row('Ideal joint fill',f(r.weld.baseArea)+' in²')}${row('Cap reinforcement',f(r.weld.capArea)+' in²')}${row('Root reinforcement',f(r.weld.rootArea)+' in²')}</details></div>
+ <div class="batch">${f(r.totalWeight*r.quantity)} lb <span>for ${f(r.quantity,0)} assemblies</span></div><h3>Combined totals / assembly</h3>${row('Material + weld volume',f(r.totalVolume)+' in³')}${row('Material + weld weight',f(r.totalWeight)+' lb')}`;
+}
+root.GeometryResults={render};
+})(globalThis);
