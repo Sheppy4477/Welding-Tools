@@ -89,3 +89,34 @@ const crownReport=box.WeldBreakdown.render({...v,joint:'u',capHeight:.1,rootHeig
 assert.ok(crownReport.html.includes('Acap = ½ × cap width × cap height'));
 assert.ok(!crownReport.html.includes('parabolic'));
 console.log('Reinforcement tests passed: cap/root half-width-times-height areas, weld weight, assembly mass balance, validation, and production calculator.');
+// Reference cells B21:B41 from the supplied WEL410 workbook, both example tabs.
+const worksheetExamples=[
+ {name:'Mild steel',depth:.625,plateWidth:3,weldLength:12,angle:60,gap:.1875,capHeight:.125,rootHeight:.0625,weldDensity:.283,
+ expected:{removedArea:.22552744890219756,capWidth:.90918783648703216,netMaterialArea:3.5244725510978023,netVolume:42.293670613173632,netWeight:11.969108783528137,baseArea:.34271494890219756,capArea:.05682423978043951,rootArea:.005859375,area:.40539856368263705,volume:4.864782764191645,weight:1.3767335222662354,totalWeight:13.345842305794372}},
+ {name:'Titanium',depth:.25,plateWidth:3,weldLength:12,angle:75,gap:.0625,capHeight:.125,rootHeight:0,weldDensity:.163,
+ expected:{removedArea:.047957936748685023,capWidth:.44616349398948019,netMaterialArea:1.4520420632513149,netVolume:17.424504759015779,netWeight:2.8401942757195719,baseArea:.063582936748685023,capArea:.027885218374342512,rootArea:0,area:.091468155123027528,volume:1.0976178614763303,weight:.17891171142064186,totalWeight:3.0191059871402137}}
+];
+for(const example of worksheetExamples){
+ const inputs={...v,...example,joint:'v',landMode:'without',basis:'net',rootWidth:999};
+ const result=calculate(inputs,[]);
+ for(const [key,expected]of Object.entries(example.expected))close(key in result.weld?result.weld[key]:result[key],expected);
+ const report=box.WeldBreakdown.render(inputs,[]);
+ assert.ok(report.html.includes('Half of included angle'));
+ assert.ok(report.html.includes('Net plate cross-sectional area'));
+ close(report.result.totalWeight,result.totalWeight);
+ // Alter the land, length, and density together and independently reconcile areas and mass.
+ const changed={...inputs,landMode:'with',land:example.depth/4,weldLength:24,weldDensity:.2};
+ const h=changed.depth-changed.land,b=h*Math.tan(changed.angle*Math.PI/360),cut=h*b;
+ const ideal=changed.gap*changed.depth+cut;
+ const cap=(changed.gap+2*b)*changed.capHeight/2,root=changed.gap*changed.rootHeight/2;
+ const updated=calculate(changed,[]);
+ close(updated.netMaterialArea,2*3*changed.depth-cut);
+ close(updated.weld.weight,(ideal+cap+root)*24*.2);
+ close(updated.totalWeight,(2*3*changed.depth+changed.gap*changed.depth+cap+root)*24*.2);
+}
+close(joint({...v,joint:'v',landMode:'with',land:1,angle:60}).removedArea,0);
+close(joint({...v,joint:'v',gap:0,rootHeight:.1}).rootArea,0);
+assert.throws(()=>calculate({...v,joint:'v',plateWidth:0},[]));
+assert.throws(()=>joint({...v,joint:'v',angle:0}));
+assert.throws(()=>joint({...v,joint:'v',angle:180}));
+console.log('WEL410 checks passed: every geometry/weight result matches both workbook examples; land, length, density, fixed two-plate model, root-gap width, and angle boundaries checked.');
