@@ -235,3 +235,17 @@ console.log('Calculation-step checks passed: every profile, land options, U comp
 
 assert.throws(()=>solve('travel','travel',{deposition:5,passes:2,weightPerFoot:0}));
 assert.throws(()=>solve('travel','weightPerFoot',{travel:0,deposition:5,passes:2}));
+
+// Weight-per-foot calculation and inverse solutions use the combined geometry area.
+for(const inputs of [geometryStartup.initial,{...geometryStartup.initial,joint:'fillet',filletSides:'both'}]){
+ const weld=calculate(inputs).weld;
+ const weight=solve('weight','weightPerFoot',{area:weld.area,density:weld.density});
+ close(weight,weld.area*12*weld.density);
+ close(weight,weld.weight*12/weld.length);
+ close(solve('weight','area',{weightPerFoot:weight,density:weld.density}),weld.area);
+ close(solve('weight','density',{weightPerFoot:weight,area:weld.area}),weld.density);
+}
+close(solve('weight','weightPerFoot',{area:.25,density:.283}),.849);
+assert.throws(()=>solve('weight','weightPerFoot',{area:'',density:.283}));
+assert.throws(()=>solve('weight','area',{weightPerFoot:1,density:0}));
+console.log('Weld weight per foot and inverse geometry reference checks passed.');

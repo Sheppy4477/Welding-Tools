@@ -1,9 +1,14 @@
 (function(root){
-const groups={deposition:['deposition','wireDiameter','wireFeed','efficiency'],travel:['travel','deposition','passes','weightPerFoot'],operator:['factor','arcTime','totalTime']};
+const groups={weight:['weightPerFoot','area','density'],deposition:['deposition','wireDiameter','wireFeed','efficiency'],travel:['travel','deposition','passes','weightPerFoot'],operator:['factor','arcTime','totalTime']};
 function solve(group,target,values){
  const keys=groups[group];if(!keys||!keys.includes(target))throw Error('Choose a valid variable to solve.');
  const v={};for(const key of keys){if(key===target)continue;const raw=values[key];const x=Number(raw);if(raw==null||String(raw).trim()===''||!Number.isFinite(x)||x<0)throw Error('Enter valid nonnegative values for all known variables.');v[key]=x;}
  const divide=(a,b)=>{if(b===0)throw Error(a===0?'These values do not determine a unique answer.':'Cannot solve with a zero divisor.');return a/b;};
+ if(group==='weight'){
+  if(target==='weightPerFoot')v[target]=v.area*12*v.density;
+  if(target==='area')v[target]=divide(v.weightPerFoot,12*v.density);
+  if(target==='density')v[target]=divide(v.weightPerFoot,12*v.area);
+ }
  if(group==='deposition'){
   if(target==='deposition')v[target]=13.1*v.wireDiameter**2*v.wireFeed*v.efficiency/100;
   if(target==='wireDiameter')v[target]=Math.sqrt(divide(v.deposition,13.1*v.wireFeed*v.efficiency/100));
