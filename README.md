@@ -2,13 +2,13 @@
 
 Open `index.html` in a web browser. No installation, server, or internet connection is needed for calculations.
 
-**Production & cost** calculates weld and stock weights, deposition from solid wire feed or a known rate, travel speed in inches per minute, operator factor, production time, and costs per pound, finished unit, and batch. Enter supplier or measured deposition data for cored wire and stick electrodes.
+**Production calculator** calculates deposition rate, travel speed, and operator factor using the supplied formulas. Dr = 13.1 × wire diameter² × wire feed speed × (process efficiency % / 100). Ts = ((Dr × weld passes) / 5) × weld metal weight per foot. Of = arc time / total time × 100. Diameter uses inches, feed uses in/min, weight uses lb/ft, and both times use minutes. Travel speed is displayed in inches per minute. Each calculator works independently and lets you select any variable to solve for. Enter the other known values; no data from another calculator is required. Zero divisors and ambiguous solutions produce an error. Solved pass counts must be whole numbers. Inputs save independently using a separate production storage key.
 
 **Geometry & weight** opens with an editable steel bevel example and calculates material and weld cross-sectional area, volume, weight, and combined assembly totals. The material box shows gross stock, preparation deductions, and net material in area/volume/weight columns. A separate weld box shows total weld cross-section, volume, and weight, with optional area components. Supports symmetric V grooves, single bevel grooves, fillets, and symmetric U grooves. Groove profiles support land or no land. The page includes an inline joint preview and formula notes. Every profile uses two equal plates with plate length equal to the continuous weld length per selected side.
 
 Every geometry profile fixes the number of equal plates at two. Enter plate thickness, width per plate, weld/plate length, total included angle, root gap, cap and root reinforcement heights, land, and density. For symmetric V grooves, each plate uses half the included angle. Single bevels prepare one side, and U grooves use the entered radius and included angle. Beveled material is subtracted before calculating material area and weight. Cap width is the top groove opening; root reinforcement width is the root gap. Every geometry profile uses one editable material / weld density for both parent and weld metal. No cap overlap or additional penetration allowance is included.
 
-Both pages have quick density buttons for steel (0.283), aluminum (0.0975), titanium (0.163), and stainless steel (0.289), in lb/in³. Buttons update densities only; dimensions stay as entered. All density fields remain editable. Geometry buttons fill the shared material / weld density. Production buttons fill weld, stock, and filler densities. A custom edit clears the matching reference highlight without overwriting the custom value. Save inputs preserves the numeric density overrides.
+The geometry page has quick density buttons for steel (0.283), aluminum (0.0975), titanium (0.163), and stainless steel (0.289), in lb/in³. Buttons update densities only; dimensions stay as entered. All density fields remain editable. Geometry buttons fill the shared material / weld density.  A custom edit clears the matching reference highlight without overwriting the custom value. Save inputs preserves the numeric density overrides.
 
 These are approximate references, with steel retaining the existing nominal value and aluminum set to the user-specified 0.0975 lb/in³. Alloy references: [6061 aluminum, NIST](https://materialsdata.nist.gov/bitstream/handle/11115/179/Properties%2Bof%2BWrought%2BAluminum.pdf?sequence=3), [Grade 2 titanium, Rolled Alloys](https://www.rolledalloys.com/wp-content/uploads/TiGrade2_DS_USA.pdf), and [304 stainless steel, MatWeb](https://matweb.com/search/DataSheet.aspx?MatGUID=072da6c8d36c4c519a87c9b082c58cd3). Actual density varies by alloy.
 
@@ -18,7 +18,7 @@ Cap and root reinforcement each use area = (width × height) / 2. Cap width come
 
 Save inputs stores the current inputs in this browser. The two calculator pages save independently. Geometry always opens with the example; use Load saved inputs to retrieve your saved work, or Load example to restore the startup example. Production restores its saved inputs automatically and provides Reset inputs. Print opens the browser print dialog, which can also save a PDF.
 
-Expand the formula notes for calculation assumptions. Operator factor covers production delays; additional setup is entered separately. Avoid counting the same setup time in both values.
+Expand the formula notes for calculation assumptions. Operator factor measures arc time as a percentage of total time.
 
 Run `node geometry.test.cjs` to check geometry, reinforcement, material/assembly mass balance, input validation, and reference calculations.
 

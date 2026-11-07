@@ -1,30 +1,33 @@
 (function(root){
-function calculate(v){
- const n=(k,min=0,max=Infinity)=>{const x=Number(v[k]);if(v[k]===''||!Number.isFinite(x)||x<min||x>max)throw Error('Check '+k+': enter a number from '+min+' to '+(max===Infinity?'a finite positive value':max)+'.');return x;};
- const positive=k=>n(k,0.000000001); const qty=positive('quantity');if(!Number.isInteger(qty))throw Error('Quantity must be a whole number.');
- let area;
- if(v.joint==='fillet')area=positive('legA')*positive('legB')/2;
- else if(v.joint==='groove')area=n('gap')*positive('depth')+positive('depth')**2*Math.tan(n('angle',1,179)*Math.PI/360);
- else area=positive('area');
- const capHeight=v.joint==='fillet'?0:n('capHeight'),rootHeight=v.joint==='fillet'?0:n('rootHeight');
- const capWidth=v.joint==='fillet'?Math.hypot(positive('legA'),positive('legB')):v.joint==='groove'?n('gap')+2*positive('depth')*Math.tan(n('angle',1,179)*Math.PI/360):capHeight>0?positive('capWidth'):0;
- area+=0.5*capWidth*capHeight+(rootHeight>0?0.5*(v.joint==='groove'?n('gap'):positive('rootWidth'))*rootHeight:0);
- const length=positive('length'),density=positive('weldDensity'),weld=area*length*density;
- let volume;
- if(v.shape==='plate')volume=positive('stockLength')*positive('width')*positive('thickness');
- else if(v.shape==='round')volume=Math.PI*positive('diameter')**2/4*positive('stockLength');
- else if(v.shape==='tube'){const d=positive('diameter'),t=positive('wall');if(t*2>=d)throw Error('Tube wall must be less than half the outside diameter.');volume=Math.PI*(d*d-(d-2*t)**2)/4*positive('stockLength');}
- else volume=n('volume');
- const pieces=n('pieces');if(!Number.isInteger(pieces))throw Error('Stock pieces must be a whole number.');
- const stock=volume*positive('stockDensity')*pieces,eff= n('efficiency',0.000001,100)/100;
- let deposition,arc,travel;
- if(v.rateMode==='travel'){travel=positive('travel');const passes=positive('passes');if(!Number.isInteger(passes))throw Error('Pass count must be a whole number.');arc=length*passes/travel;deposition=weld/arc;}
- else{deposition=v.rateMode==='wire'?Math.PI*positive('wireDiameter')**2/4*positive('wireFeed')*positive('fillerDensity')*eff:positive('directRate')/60;arc=weld/deposition;travel=length/arc;}
- let factor;if(v.factorMode==='measured'){const a=positive('observedArc'),t=positive('observedTotal');if(a>t)throw Error('Observed arc time cannot exceed total working time.');factor=a/t;}else factor=n('factor',0.000001,100)/100;
- const paid=arc/factor,setup=n('setup'),filler=weld/eff,rate=n('labor')+n('overhead');
- const materialCost=stock*n('stockPrice'),fillerCost=filler*n('fillerPrice'),laborCost=(paid+setup)/60*rate,consumableCost=arc/60*n('consumables');
- const weldingCost=fillerCost+laborCost+consumableCost,total=materialCost+weldingCost;
- const result={qty,area,weld,stock,filler,deposition,arc,travel,factor,paid,setup,materialCost,fillerCost,laborCost,consumableCost,weldingCost,total,perWeldPound:weldingCost/weld,perFinishedPound:total/(stock+weld),batchCost:total*qty,batchWeld:weld*qty,batchStock:stock*qty,batchMinutes:(paid+setup)*qty};
- if(Object.values(result).some(x=>!Number.isFinite(x)))throw Error('Inputs produce an estimate too large to calculate.');return result;
-}root.WeldCalculator={calculate};
+const groups={deposition:['deposition','wireDiameter','wireFeed','efficiency'],travel:['travel','deposition','passes','weightPerFoot'],operator:['factor','arcTime','totalTime']};
+function solve(group,target,values){
+ const keys=groups[group];if(!keys||!keys.includes(target))throw Error('Choose a valid variable to solve.');
+ const v={};for(const key of keys){if(key===target)continue;const raw=values[key];const x=Number(raw);if(raw==null||String(raw).trim()===''||!Number.isFinite(x)||x<0)throw Error('Enter valid nonnegative values for all known variables.');v[key]=x;}
+ const divide=(a,b)=>{if(b===0)throw Error(a===0?'These values do not determine a unique answer.':'Cannot solve with a zero divisor.');return a/b;};
+ if(group==='deposition'){
+  if(target==='deposition')v[target]=13.1*v.wireDiameter**2*v.wireFeed*v.efficiency/100;
+  if(target==='wireDiameter')v[target]=Math.sqrt(divide(v.deposition,13.1*v.wireFeed*v.efficiency/100));
+  if(target==='wireFeed')v[target]=divide(v.deposition,13.1*v.wireDiameter**2*v.efficiency/100);
+  if(target==='efficiency')v[target]=divide(v.deposition*100,13.1*v.wireDiameter**2*v.wireFeed);
+  if(v.efficiency>100)throw Error('Process efficiency must be between 0 and 100%.');
+ }
+ if(group==='travel'){
+  if(target==='travel')v[target]=v.deposition*v.passes*v.weightPerFoot/5;
+  if(target==='deposition')v[target]=divide(v.travel*5,v.passes*v.weightPerFoot);
+  if(target==='passes')v[target]=divide(v.travel*5,v.deposition*v.weightPerFoot);
+  if(target==='weightPerFoot')v[target]=divide(v.travel*5,v.deposition*v.passes);
+  if(v.passes<1||Math.abs(v.passes-Math.round(v.passes))>1e-9)throw Error('These values require a non-whole pass count. Number of weld passes must be a whole number of at least 1.');
+  v.passes=Math.round(v.passes);
+ }
+ if(group==='operator'){
+  if(target==='factor')v[target]=divide(v.arcTime*100,v.totalTime);
+  if(target==='arcTime')v[target]=v.factor*v.totalTime/100;
+  if(target==='totalTime')v[target]=divide(v.arcTime*100,v.factor);
+  if(v.totalTime<=0)throw Error('Total time must be greater than zero.');
+  if(v.factor>100||v.arcTime>v.totalTime)throw Error('Operator factor must be 0–100%, and arc time cannot exceed total time.');
+ }
+ if(!Number.isFinite(v[target]))throw Error('Inputs are too large to calculate.');return v[target];
+}
+function calculate(v){const deposition=solve('deposition','deposition',v);return {deposition,travel:solve('travel','travel',{...v,deposition}),factor:solve('operator','factor',v)};}
+root.WeldCalculator={calculate,solve};
 })(globalThis);
