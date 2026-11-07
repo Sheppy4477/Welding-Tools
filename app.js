@@ -10,7 +10,7 @@ const fmt=x=>x.toLocaleString('en-US',{maximumSignificantDigits:8});
 for(const [i,config] of sections.entries()){
  const section=document.createElement('section');section.id=config.id+'-calculator';
  const heading=document.createElement('h2');heading.innerHTML=`<span>0${i+1}</span>${config.title}`;section.append(heading);
- const label=document.createElement('label');label.innerHTML='<span>Solve for</span>';const select=document.createElement('select');select.id=config.id+'-target';for(const [key,title] of config.fields)select.add(new Option(title,key));label.append(select);section.append(label);
+ const label=document.createElement('label');label.innerHTML='<span>Solve for</span>';const select=document.createElement('select');select.id=config.id+'-target';for(const [key,title] of config.fields)select.add(new Option(title,key));label.append(select);if(config.id==='weight')label.hidden=true;section.append(label);
  const formula=document.createElement('p');formula.className='note';formula.textContent=config.formula;section.append(formula);
  const fields=document.createElement('div');fields.className='fields';
  for(const [key,title,unit,value] of config.fields){const field=document.createElement('label');field.htmlFor=`${config.id}-${key}`;field.innerHTML=`<span>${title}</span><div class="input-wrap"><input id="${config.id}-${key}" data-key="${key}" type="number" min="0" step="any" inputmode="decimal" value="${value}"><small>${unit}</small></div>`;fields.append(field);}
@@ -30,7 +30,7 @@ for(const [i,config] of sections.entries()){
 
 }
 function snapshot(){return Object.fromEntries(sections.map(c=>[c.id,{target:document.getElementById(c.id+'-target').value,values:Object.fromEntries(c.fields.map(([key])=>[key,document.getElementById(`${c.id}-${key}`).value]))}]));}
-function load(saved){for(const c of sections){const data=saved?.[c.id];const select=document.getElementById(c.id+'-target');select.value=c.fields.some(f=>f[0]===data?.target)?data.target:c.fields[0][0];for(const [key,,,value] of c.fields)document.getElementById(`${c.id}-${key}`).value=data?.values?.[key]??value;c.update();}}
+function load(saved){for(const c of sections){const data=saved?.[c.id];const select=document.getElementById(c.id+'-target');select.value=c.id!=='weight'&&c.fields.some(f=>f[0]===data?.target)?data.target:c.fields[0][0];for(const [key,,,value] of c.fields)document.getElementById(`${c.id}-${key}`).value=data?.values?.[key]??value;c.update();}}
 form.addEventListener('submit',e=>e.preventDefault());document.querySelector('#print').onclick=()=>window.print();
 document.querySelector('#save').onclick=()=>{try{localStorage.setItem('weld-tools-production-v3',JSON.stringify(snapshot()));document.querySelector('#status').textContent='All calculator inputs saved in this browser.';}catch{document.querySelector('#status').textContent='Browser storage unavailable. Print to keep a copy.';}};
 document.querySelector('#reset').onclick=()=>{load();document.querySelector('#status').textContent='All calculator inputs reset.';};
