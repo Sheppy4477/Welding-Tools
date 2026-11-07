@@ -54,14 +54,14 @@ vm.runInNewContext(fs.readFileSync(__dirname+'/calculator.js','utf8'),box);
 const productionDefaults=vm.runInNewContext(fs.readFileSync(__dirname+'/app.js','utf8').split('const sections=')[0]+'defaults');
 const productionBase=box.WeldCalculator.calculate(productionDefaults);
 close(productionBase.deposition,7.5603375);
-close(productionBase.travel,.75603375);
+close(productionBase.travel,3.024135);
 close(productionBase.factor,30);
 close(box.WeldCalculator.calculate({...productionDefaults,passes:2,weightPerFoot:1}).travel,3.024135);
 close(box.WeldCalculator.calculate({...productionDefaults,arcTime:0}).factor,0);
 for(const invalid of [{totalTime:0},{arcTime:61},{passes:1.5},{efficiency:101},{wireDiameter:''},{wireFeed:Infinity},{weightPerFoot:-1}])assert.throws(()=>box.WeldCalculator.calculate({...productionDefaults,...invalid}));
 // Solve every variable from independent known reference values.
 const solve=box.WeldCalculator.solve;
-for(const [group,known] of Object.entries({deposition:{deposition:7.5603375,wireDiameter:.045,wireFeed:300,efficiency:95},travel:{travel:3.024135,deposition:7.5603375,passes:2,weightPerFoot:1},operator:{factor:30,arcTime:18,totalTime:60}})){
+for(const [group,known] of Object.entries({deposition:{deposition:7.5603375,wireDiameter:.045,wireFeed:300,efficiency:95},travel:{travel:6.04827,deposition:7.5603375,passes:2,weightPerFoot:.5},operator:{factor:30,arcTime:18,totalTime:60}})){
  for(const target of Object.keys(known))close(solve(group,target,{...known,[target]:''}),known[target]);
 }
 assert.throws(()=>solve('deposition','wireFeed',{deposition:0,wireDiameter:0,efficiency:95}));
@@ -69,7 +69,7 @@ assert.throws(()=>solve('operator','totalTime',{arcTime:0,factor:0}));
 assert.throws(()=>solve('operator','arcTime',{factor:101,totalTime:60}));
 assert.throws(()=>solve('travel','passes',{travel:1,deposition:3,weightPerFoot:1}));
 close(solve('operator','factor',{arcTime:0,totalTime:60}),0);
-close(solve('travel','travel',{deposition:5,passes:2,weightPerFoot:.5}),1);
+close(solve('travel','travel',{deposition:5,passes:2,weightPerFoot:.5}),4);
 console.log('Reinforcement tests passed: cap/root half-width-times-height areas, weld weight, assembly mass balance, validation, and production calculator.');
 // Independent reference cases for the symmetric two-plate geometry.
 const referenceCases=[
@@ -232,3 +232,6 @@ const firstSteps=stepsContent.innerHTML;liveInputs={...liveInputs,weldLength:24}
 controller.invalidate();assert.equal(stepsPanel.hidden,true);assert.equal(stepsButton.disabled,true);assert.equal(stepsContent.innerHTML,'');
 controller.update(liveInputs);stepsButton.onclick();stepsButton.onclick();assert.equal(stepsPanel.hidden,true);
 console.log('Calculation-step checks passed: every profile, land options, U components, totals, invalid input, toggle state, and live updates.');
+
+assert.throws(()=>solve('travel','travel',{deposition:5,passes:2,weightPerFoot:0}));
+assert.throws(()=>solve('travel','weightPerFoot',{travel:0,deposition:5,passes:2}));

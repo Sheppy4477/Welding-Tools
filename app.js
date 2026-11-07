@@ -1,7 +1,7 @@
 const defaults={wireDiameter:0.045,wireFeed:300,efficiency:95,passes:1,weightPerFoot:0.5,arcTime:18,totalTime:60};
 const sections=[
  {id:'deposition',title:'Deposition rate',formula:'Dr = 13.1 × diameter² × wire feed speed × (efficiency / 100)',fields:[['deposition','Deposition rate','lb/hr',7.5603375],['wireDiameter','Wire diameter','in',defaults.wireDiameter],['wireFeed','Wire feed speed','in/min',defaults.wireFeed],['efficiency','Process efficiency','%',defaults.efficiency]]},
- {id:'travel',title:'Travel speed',formula:'Ts = ((Dr × weld passes) / 5) × weld metal weight per foot',fields:[['travel','Travel speed','in/min',.75603375],['deposition','Deposition rate','lb/hr',7.5603375],['passes','Number of weld passes','passes',defaults.passes],['weightPerFoot','Weld metal weight per foot','lb/ft',defaults.weightPerFoot]]},
+ {id:'travel',title:'Travel speed',formula:'Ts = (Dr × weld passes) / (5 × weld metal weight per foot)',fields:[['travel','Travel speed','in/min',3.024135],['deposition','Deposition rate','lb/hr',7.5603375],['passes','Number of weld passes','passes',defaults.passes],['weightPerFoot','Weld metal weight per foot','lb/ft',defaults.weightPerFoot]]},
  {id:'operator',title:'Operator factor',formula:'Of = (arc time / total time) × 100',fields:[['factor','Operator factor','%',30],['arcTime','Arc time','min',defaults.arcTime],['totalTime','Total time','min',defaults.totalTime]]}
 ];
 const form=document.querySelector('#inputs');

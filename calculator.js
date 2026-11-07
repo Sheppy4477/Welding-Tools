@@ -12,10 +12,11 @@ function solve(group,target,values){
   if(v.efficiency>100)throw Error('Process efficiency must be between 0 and 100%.');
  }
  if(group==='travel'){
-  if(target==='travel')v[target]=v.deposition*v.passes*v.weightPerFoot/5;
-  if(target==='deposition')v[target]=divide(v.travel*5,v.passes*v.weightPerFoot);
-  if(target==='passes')v[target]=divide(v.travel*5,v.deposition*v.weightPerFoot);
-  if(target==='weightPerFoot')v[target]=divide(v.travel*5,v.deposition*v.passes);
+  if(target==='travel')v[target]=divide(v.deposition*v.passes,5*v.weightPerFoot);
+  if(target==='deposition')v[target]=divide(v.travel*5*v.weightPerFoot,v.passes);
+  if(target==='passes')v[target]=divide(v.travel*5*v.weightPerFoot,v.deposition);
+  if(target==='weightPerFoot')v[target]=divide(v.deposition*v.passes,5*v.travel);
+  if(v.weightPerFoot<=0)throw Error('Weld metal weight per foot must be greater than zero.');
   if(v.passes<1||Math.abs(v.passes-Math.round(v.passes))>1e-9)throw Error('These values require a non-whole pass count. Number of weld passes must be a whole number of at least 1.');
   v.passes=Math.round(v.passes);
  }
