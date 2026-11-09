@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 280">
+  <rect x="30" y="25" width="380" height="230" rx="8" fill="#101923" stroke="#526272"/>
+  <g fill="#74d9ef" font-family="Arial, sans-serif" font-size="12" font-weight="bold"><text x="60" y="55">WELD PRODUCTION</text><text x="60" y="239">MATERIAL FEED</text><text x="255" y="239">TRAVEL SPEED</text></g>
+  <g fill="none" stroke="#74d9ef" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="95" cy="115" r="30"/><circle cx="95" cy="115" r="12"/><path d="M125 115h82l35 35h105m-30-15 30 15-30 15M70 190h278"/></g>
+</svg>

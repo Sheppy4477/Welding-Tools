@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 280">
+  <rect x="30" y="25" width="380" height="230" rx="8" fill="#101923" stroke="#526272"/>
+  <g fill="#8ee2aa" font-family="Arial, sans-serif" font-size="12" font-weight="bold"><text x="60" y="55">WELD COST</text><text x="60" y="239">LABOR + MATERIAL</text><text x="255" y="239">COST BREAKDOWN</text></g>
+  <g fill="none" stroke="#8ee2aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M74 190v-78h48v78m30 0V76h48v114m30 0v-52h48v52m30 0v-96h48v96M60 190h314"/></g>
+</svg>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weld Tools | Heat Input</title><link rel="stylesheet" href="style.css"></head>
-<body><header><div class="brand"><img src="weld-mark.svg" alt="" width="44" height="44"><span>WELD TOOLS</span></div><nav><a href="index.html">Production Calculator</a><a href="geometry.html">Geometry &amp; Weight</a><a href="cost.html">Cost Calculator</a><a href="heat.html" aria-current="page">Hnet, Cooling, &amp; Peak Temp.</a></nav><button onclick="window.print()">Print results</button></header>
-<main><div class="intro"><span class="eyebrow">WELDING / THERMAL CALCULATIONS</span><h1>Heat input and cooling</h1><p>Calculate net heat input, thin and thick plate cooling rates, peak temperature, and solidification rate.</p><a class="calculator-jump" href="#heatForm">Open calculator ↓</a></div>
+<body class="theme-heat"><header><div class="brand"><img src="weld-mark.svg" alt="" width="44" height="44"><span>WELD TOOLS</span></div><nav><a href="index.html">Production Calculator</a><a href="geometry.html">Geometry &amp; Weight</a><a href="cost.html">Cost Calculator</a><a href="heat.html" aria-current="page">Hnet, Cooling, &amp; Peak Temp.</a><a href="wps.html">WPS / PQR</a></nav><button onclick="window.print()">Print results</button></header>
+<main><div class="intro"><span class="eyebrow">WELDING / THERMAL CALCULATIONS</span><h1>Heat input and cooling</h1><p>Calculate net heat input, thin and thick plate cooling rates, peak temperature, and solidification rate.</p></div>
 <div class="layout"><form id="heatForm"><section><h2>Workbook inputs</h2><div class="fields" id="heatFields"></div></section></form><aside class="summary"><h2>Thermal results</h2><div id="heatResults" aria-live="polite"></div></aside></div>
 <details><summary>Workbook formulas and cooling rules</summary><div class="methods">
 <p>Net heat input H = voltage × amperage × 60 ÷ (travel speed × 1,000) × arc efficiency in kJ/in. Multiply by 0.947817 for BTU/in. The formulas below use H in BTU/in, ΔT = Tc − To, and k = thermal conductivity ÷ 3,600 ÷ 12.</p>
@@ -12,7 +12,7 @@
 <h3>Material property reference</h3>
 <div class="heat-reference">
 <table>
-<caption>Material values from the supplied reference sheet</caption>
+<caption>Editable material properties</caption>
 <thead><tr><th scope="col">Material</th><th scope="col">Density (ρ)<br>lb/in³</th><th scope="col">Specific heat (C)<br>BTU/(lb·°F)</th><th scope="col">Thermal conductivity<br>BTU/(ft·hr·°F)</th><th scope="col">Latent heat of fusion (L)<br>BTU/lb</th><th scope="col">Melting temperature (Tm)<br>°F</th></tr></thead>
 <tbody>
 <tr><th scope="row">Aluminum 3004</th><td>0.094</td><td>0.220</td><td>137</td><td>170</td><td>1220</td></tr>
@@ -26,5 +26,5 @@
 </tbody>
 </table>
 </div>
-<p>The calculator uses the workbook’s density values of 0.0939 lb/in³ for Aluminum 3004, 0.0975 lb/in³ for Aluminum 6061, and 0.289 lb/in³ for Austenitic SS.</p>
+<p>Valid edits apply immediately. Save to keep them after refreshing or reopening this page.</p><div class="toolbar"><button type="button" id="saveMaterials">Save material properties</button><span id="materialSaveStatus" role="status"></span></div>
 </div></details></main><footer>WELD TOOLS <span>Heat input calculator</span></footer><script src="heat.js"></script></body></html>

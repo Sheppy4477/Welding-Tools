@@ -129,3 +129,18 @@ nav{display:flex;gap:20px;font-size:13px}nav a{text-decoration:none;color:var(--
     nav a { padding-inline: 6px; }
   }
 }
+
+@media screen {
+  .theme-production { --accent: #74d9ef; }
+  .theme-production .intro::after { background-image: url("graphic-production.svg"); }
+  .theme-geometry { --accent: #ffc07b; }
+  .theme-geometry .intro::after { background-image: url("graphic-geometry.svg"); }
+  .theme-cost { --accent: #8ee2aa; }
+  .theme-cost .intro::after { background-image: url("graphic-cost.svg"); }
+  .theme-heat { --accent: #fda3a7; }
+  .theme-heat .intro::after { background-image: url("graphic-heat.svg"); }
+  .theme-wps { --accent: #c6b2ff; }
+  .intro { background: linear-gradient(110deg, #080d14 20%, color-mix(in srgb, var(--accent) 12%, #101923)); }
+}
+.heat-reference input { min-width: 85px; padding: 6px; text-align: right; }
+.heat-reference input[aria-invalid="true"] { border-color: #ff7373; }

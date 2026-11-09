@@ -1,0 +1,25 @@
+.wps-table-wrap { overflow-x: auto; }
+.wps-table { width: 100%; min-width: 640px; border-collapse: collapse; }
+.wps-table th, .wps-table td { padding: 8px; border: 1px solid var(--line); }
+.wps-table th { text-align: left; font-size: .85rem; }
+.wps-table td { min-width: 100px; }
+.wps-table input { padding: 8px; }
+.wps-notes { display: block; }
+.wps-notes textarea { display: block; width: 100%; min-height: 100px; margin-top: 8px; padding: 12px; font: inherit; color: var(--text); background: var(--recess, var(--bg)); border: 1px solid var(--line); border-radius: 5px; resize: vertical; }
+.wps-notes textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.wps-add { margin-top: 12px; }
+@media screen {
+  body:has(#wpsEditor) .intro::after { background-image: url("wps-form.svg"); }
+}
+@media (max-width: 1080px) {
+  body:has(#wpsEditor) header { flex-wrap: wrap; }
+  body:has(#wpsEditor) header nav { order: 3; width: 100%; }
+}
+
+.worksheet-scroll { overflow-x: auto; background: #dce5ee; padding: 12px; }
+.worksheet-grid { table-layout: fixed; width: max-content; border-collapse: collapse; background: white; color: #172330; font: 12px/1.25 Arial, sans-serif; }
+.worksheet-grid td { border: 1px solid #c5d0da; padding: 3px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.worksheet-grid td.worksheet-editable { background: #f6fafd; padding: 0; }
+.worksheet-grid input, .worksheet-grid textarea { box-sizing: border-box; width: 100%; min-width: 0; color: #14283b; background: transparent; border: 0; border-radius: 0; padding: 4px; font: inherit; }
+.worksheet-grid textarea { min-height: 64px; resize: vertical; }
+.worksheet-grid :is(input, textarea):focus { outline: 2px solid #1974aa; outline-offset: -2px; background: white; }

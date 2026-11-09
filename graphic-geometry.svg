@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 280">
+  <rect x="30" y="25" width="380" height="230" rx="8" fill="#101923" stroke="#526272"/>
+  <g fill="#ffc07b" font-family="Arial, sans-serif" font-size="12" font-weight="bold"><text x="60" y="55">JOINT GEOMETRY</text><text x="60" y="239">GROOVE PROFILE</text><text x="255" y="239">CROSS SECTION</text></g>
+  <g fill="none" stroke="#ffc07b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M58 92h105l50 65 50-65h107v95H58zM213 157l50-65H163zM65 215h300m-300-8v16m300-16v16"/></g>
+</svg>

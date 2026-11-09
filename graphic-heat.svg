@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 280">
+  <rect x="30" y="25" width="380" height="230" rx="8" fill="#101923" stroke="#526272"/>
+  <g fill="#fda3a7" font-family="Arial, sans-serif" font-size="12" font-weight="bold"><text x="60" y="55">THERMAL PROFILE</text><text x="60" y="239">PEAK TEMPERATURE</text><text x="255" y="239">COOLING TREND</text></g>
+  <g fill="none" stroke="#fda3a7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M68 76v121h300M76 182c45 0 53-92 101-92s25 80 185 92"/><circle cx="177" cy="90" r="6"/></g>
+</svg>

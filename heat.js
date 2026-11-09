@@ -98,6 +98,60 @@
       + rule;
   }
   form.addEventListener('input', update);
+  const referenceRows = document.querySelectorAll('.heat-reference tbody tr');
+  const materialNames = Object.keys(materials);
+  const storageKey = 'weld-heat-materials-v1';
+  const saveStatus = document.getElementById('materialSaveStatus');
+  const validProperty = (value, column) => Number.isFinite(value) && (column >= 4 || value > 0);
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey));
+    for (const material of materialNames) {
+      const values = saved?.[material];
+      if (Array.isArray(values) && values.length === 5 && values.every(validProperty)) {
+        materials[material] = values;
+      }
+    }
+  } catch {
+    saveStatus.textContent = 'Saved properties could not be loaded. Using workbook defaults.';
+  }
+  referenceRows.forEach((row, rowIndex) => {
+    const material = materialNames[rowIndex];
+    row.querySelectorAll('td').forEach((cell, column) => {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.required = true;
+      if (column < 4) input.min = '0';
+      input.value = materials[material][column];
+      input.setAttribute('aria-label', row.cells[0].textContent + ' — '
+        + row.closest('table').tHead.rows[0].cells[column + 1].textContent);
+      input.addEventListener('input', () => {
+        const value = input.valueAsNumber;
+        const valid = input.validity.valid && validProperty(value, column);
+        input.setAttribute('aria-invalid', String(!valid));
+        saveStatus.textContent = valid ? 'Unsaved changes.' : 'Correct the highlighted value before saving.';
+        if (valid) {
+          materials[material][column] = value;
+          update();
+        }
+      });
+      cell.replaceChildren(input);
+    });
+  });
+  document.getElementById('saveMaterials').onclick = () => {
+    const invalid = document.querySelector('.heat-reference input[aria-invalid="true"]');
+    if (invalid) {
+      saveStatus.textContent = 'Correct the highlighted value before saving.';
+      invalid.focus();
+      return;
+    }
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(materials));
+      saveStatus.textContent = 'Material properties saved in this browser.';
+    } catch {
+      saveStatus.textContent = 'Browser storage is unavailable. Changes could not be saved.';
+    }
+  };
   form.addEventListener('change', update);
   form.addEventListener('submit', event => event.preventDefault());
   update();
