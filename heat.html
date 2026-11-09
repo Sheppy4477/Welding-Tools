@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weld Tools | Heat Input</title><link rel="stylesheet" href="style.css"></head>
+<body><header><div class="brand"><img src="weld-mark.svg" alt="" width="44" height="44"><span>WELD TOOLS</span></div><nav><a href="index.html">Production Calculator</a><a href="geometry.html">Geometry &amp; Weight</a><a href="cost.html">Cost Calculator</a><a href="heat.html" aria-current="page">Hnet, Cooling, &amp; Peak Temp.</a></nav><button onclick="window.print()">Print results</button></header>
+<main><div class="intro"><span class="eyebrow">WELDING / THERMAL CALCULATIONS</span><h1>Heat input and cooling</h1><p>Calculate net heat input, thin and thick plate cooling rates, peak temperature, and solidification rate.</p><a class="calculator-jump" href="#heatForm">Open calculator ↓</a></div>
+<div class="layout"><form id="heatForm"><section><h2>Workbook inputs</h2><div class="fields" id="heatFields"></div></section></form><aside class="summary"><h2>Thermal results</h2><div id="heatResults" aria-live="polite"></div></aside></div>
+<details><summary>Workbook formulas and cooling rules</summary><div class="methods">
+<p>Net heat input H = voltage × amperage × 60 ÷ (travel speed × 1,000) × arc efficiency in kJ/in. Multiply by 0.947817 for BTU/in. The formulas below use H in BTU/in, ΔT = Tc − To, and k = thermal conductivity ÷ 3,600 ÷ 12.</p>
+<p>Relative plate thickness = b × √(density × specific heat × ΔT ÷ H). Use thin only at 0.6 or less, both between 0.6 and 0.9, and thick only at 0.9 or greater. Both calculated values are shown with the applicable rule. Cooling rates retain the workbook’s signs and −°F/s label.</p>
+<p>Thin cooling = −2π × density × specific heat × ΔT³ × (b/H)² × k. Thick cooling = −2π × ΔT² × k ÷ H.</p>
+<p>Peak temperature = To + H(Tm − To) ÷ [density × specific heat × b × y × √(2πe) × (Tm − To) + H]. Solidification rate = latent heat × H × density ÷ [k × 2π × density × specific heat × (Tm − To)²], in seconds.</p>
+<p>Plate thickness and distance use inches. In the formulas above, ρ is density, C is specific heat, L is latent heat of fusion, and Tm is melting temperature. The conductivity in the reference table is converted to k by dividing by 3,600 and then by 12.</p>
+<h3>Material property reference</h3>
+<div class="heat-reference">
+<table>
+<caption>Material values from the supplied reference sheet</caption>
+<thead><tr><th scope="col">Material</th><th scope="col">Density (ρ)<br>lb/in³</th><th scope="col">Specific heat (C)<br>BTU/(lb·°F)</th><th scope="col">Thermal conductivity<br>BTU/(ft·hr·°F)</th><th scope="col">Latent heat of fusion (L)<br>BTU/lb</th><th scope="col">Melting temperature (Tm)<br>°F</th></tr></thead>
+<tbody>
+<tr><th scope="row">Aluminum 3004</th><td>0.094</td><td>0.220</td><td>137</td><td>170</td><td>1220</td></tr>
+<tr><th scope="row">Aluminum 6061</th><td>0.098</td><td>0.222</td><td>136</td><td>170</td><td>1220</td></tr>
+<tr><th scope="row">Cast Iron</th><td>0.258</td><td>0.11</td><td>52.0</td><td>54.2</td><td>2200</td></tr>
+<tr><th scope="row">Austenitic SS</th><td>0.290</td><td>0.120</td><td>8.32</td><td>34.68</td><td>2750</td></tr>
+<tr><th scope="row">Martensitic SS</th><td>0.278</td><td>0.110</td><td>8.26</td><td>33.10</td><td>2750</td></tr>
+<tr><th scope="row">Carbon Steel 0.5%</th><td>0.284</td><td>0.120</td><td>31.2</td><td>24.0</td><td>2700</td></tr>
+<tr><th scope="row">Carbon Steel 1.0%</th><td>0.283</td><td>0.120</td><td>24.8</td><td>24.0</td><td>2600</td></tr>
+<tr><th scope="row">Carbon Steel 1.5%</th><td>0.282</td><td>0.120</td><td>20.8</td><td>24.0</td><td>2500</td></tr>
+</tbody>
+</table>
+</div>
+<p>The calculator uses the workbook’s density values of 0.0939 lb/in³ for Aluminum 3004, 0.0975 lb/in³ for Aluminum 6061, and 0.289 lb/in³ for Austenitic SS.</p>
+</div></details></main><footer>WELD TOOLS <span>Heat input calculator</span></footer><script src="heat.js"></script></body></html>
